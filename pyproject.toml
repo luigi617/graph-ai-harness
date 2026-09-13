@@ -11,8 +11,7 @@ requires-python = ">=3.11"
 license = { file = "LICENSE" }
 authors = [{ name = "luigi617" }]
 
-# Standard-library only: no required runtime dependencies.
-dependencies = []
+dependencies = ["boto3", "python-dotenv"]
 
 [project.optional-dependencies]
 dev = ["pytest", "ruff"]
@@ -37,6 +36,8 @@ select = ["E", "W", "F", "I", "UP", "B"]
 known-first-party = [
     "graph",
     "harness",
+    "protocols",
+    "plugins",
 ]
 
 [tool.black]
