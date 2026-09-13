@@ -216,3 +216,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Evaluation datasets (downloaded, not vendored)
+dataset/
+
+# Evaluation run outputs
+results/

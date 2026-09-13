@@ -1,2 +1,3 @@
-# anything-as-graph
+# graph-ai-harness
+
 Work in progress...

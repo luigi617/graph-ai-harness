@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "graph-ai-harness"
+version = "0.1.0"
+description = "An AI harness"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+authors = [{ name = "luigi617" }]
+
+# Standard-library only: no required runtime dependencies.
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest", "ruff"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+src = ["src"]
+
+[tool.ruff.lint]
+# pyflakes (F) + pycodestyle (E/W) cover what flake8 did; add isort (I),
+# pyupgrade (UP), and bugbear (B) for a bit more.
+select = ["E", "W", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.isort]
+known-first-party = [
+    "graph",
+    "harness",
+]
+
+[tool.black]
+target-version = ["py311"]
+line-length = 88
