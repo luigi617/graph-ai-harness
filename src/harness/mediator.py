@@ -1,14 +1,18 @@
 from __future__ import annotations
 
+from core.message import Message
 from harness.registry import Registry
 from harness.session import Session
-from protocols.provider import Message
 
 
 class Context:
     def __init__(self, session: Session, registry: Registry) -> None:
         self._session = session
         self._registry = registry
+
+    @property
+    def session_id(self) -> str:
+        return self._session.id
 
     @property
     def history(self) -> list[Message]:

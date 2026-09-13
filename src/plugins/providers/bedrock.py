@@ -6,8 +6,9 @@ from typing import Any
 import boto3
 from dotenv import load_dotenv
 
+from core.message import Message
+from core.response import Response
 from plugins.providers.base import BaseProvider
-from protocols.provider import Message, Response
 from protocols.tool import Tool
 
 DEFAULT_REGION = "us-east-1"
@@ -54,18 +55,49 @@ class BedrockProvider(BaseProvider):
     def _to_converse(history: list[Message]) -> tuple[list[dict], list[dict]]:
         system: list[dict] = []
         messages: list[dict] = []
+        pending_results: list[dict] = []
+
+        def flush_results() -> None:
+            if pending_results:
+                messages.append({"role": "user", "content": list(pending_results)})
+                pending_results.clear()
+
         for m in history:
-            role = m.get("role")
-            content = m.get("content", "")
-            if role == "system":
-                system.append({"text": content})
-            elif role == "tool":
-                label = m.get("name", "")
-                messages.append(
-                    {"role": "user", "content": [{"text": f"[tool:{label}] {content}"}]}
+            if m.role == "tool":
+                # Batch consecutive tool results into one user turn, each linked
+                # back to its call via toolUseId.
+                pending_results.append(
+                    {
+                        "toolResult": {
+                            "toolUseId": m.tool_use_id,
+                            "content": [{"text": m.content}],
+                        }
+                    }
                 )
-            elif role in ("user", "assistant"):
-                messages.append({"role": role, "content": [{"text": content}]})
+                continue
+
+            flush_results()
+            if m.role == "system":
+                system.append({"text": m.content})
+            elif m.role == "user":
+                messages.append({"role": "user", "content": [{"text": m.content}]})
+            elif m.role == "assistant":
+                blocks: list[dict] = []
+                if m.content:
+                    blocks.append({"text": m.content})
+                for call in m.tool_calls:
+                    blocks.append(
+                        {
+                            "toolUse": {
+                                "toolUseId": call.get("id"),
+                                "name": call.get("name"),
+                                "input": call.get("arguments", {}),
+                            }
+                        }
+                    )
+                messages.append({"role": "assistant", "content": blocks})
+
+        flush_results()
         return system, messages
 
     @staticmethod

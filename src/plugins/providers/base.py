@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from abc import abstractmethod
 
+from core.message import Message
+from core.response import Response
 from protocols.mediator import Context
-from protocols.provider import Message, Provider, Response
+from protocols.provider import Provider
 from protocols.tool import Tool
 
 

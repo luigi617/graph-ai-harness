@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 
+from core.message import Message
 from protocols.mediator import Context
-from protocols.provider import Message
 from protocols.tool import Tool
 
 
@@ -21,4 +21,9 @@ class ToolRunner:
             content = f"error: unknown tool {name!r}"
         else:
             content = tool.run(call.get("arguments", {}), ctx)
-        return {"role": "tool", "name": name, "content": content}
+        return Message(
+            role="tool",
+            content=content,
+            name=name,
+            tool_use_id=call.get("id"),
+        )

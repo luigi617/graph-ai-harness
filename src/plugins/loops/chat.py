@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from core.message import Message
 from protocols.loop import Loop
 from protocols.mediator import Context
 
@@ -11,5 +12,5 @@ class ChatLoop(Loop):
         for cm in ctx.all("context"):  # request middleware chain
             history = cm.process(history, ctx)
         response = ctx.get("provider").complete(history, ctx)
-        ctx.history.append({"role": "assistant", "content": response.text})
+        ctx.history.append(Message(role="assistant", content=response.text))
         return response.text

@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from typing import Protocol, runtime_checkable
 
-from protocols.provider import Message
+from core.message import Message
 
 
 @runtime_checkable
 class Context(Protocol):
+    session_id: str
     history: list[Message]
     interrupted: bool
 

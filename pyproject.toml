@@ -34,6 +34,7 @@ select = ["E", "W", "F", "I", "UP", "B"]
 
 [tool.ruff.lint.isort]
 known-first-party = [
+    "core",
     "graph",
     "harness",
     "protocols",

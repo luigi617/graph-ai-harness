@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from core.message import Message
 from plugins.tools import ToolRunner
 from protocols.loop import Loop
 from protocols.mediator import Context
@@ -22,7 +23,11 @@ class AgenticLoop(Loop):
                 history = cm.process(history, ctx)
             response = provider.complete(history, ctx)
             ctx.history.append(
-                {"role": "assistant", "content": response.text}
+                Message(
+                    role="assistant",
+                    content=response.text,
+                    tool_calls=response.tool_calls,
+                )
             )
 
             if not response.tool_calls:  # natural exit

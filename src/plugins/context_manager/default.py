@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+from core.message import Message
 from protocols.context import ContextManager
 from protocols.mediator import Context
-from protocols.provider import Message
 
 
 class DefaultContextManager(ContextManager):

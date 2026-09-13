@@ -3,8 +3,8 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import ClassVar, Protocol, runtime_checkable
 
+from core.message import Message
 from protocols.mediator import Context
-from protocols.provider import Message
 
 
 @runtime_checkable
