@@ -3,8 +3,14 @@ from __future__ import annotations
 from harness import GraphAIHarness
 from plugins.context_manager import DefaultContextManager
 from plugins.loops import AgenticLoop, ChatLoop
+from plugins.permissions import (
+    AllowList,
+    AskUnless,
+    AutoApprove,
+    ConsoleApprover,
+    DenyList,
+)
 from plugins.providers import BaseProvider, BedrockProvider
-from plugins.tools import ToolRunner
 from plugins.tracers import GraphTracer
 
 __all__ = [
@@ -12,10 +18,14 @@ __all__ = [
     "ChatLoop",
     "AgenticLoop",
     "DefaultContextManager",
-    "ToolRunner",
     "BaseProvider",
     "BedrockProvider",
     "GraphTracer",
+    "AllowList",
+    "DenyList",
+    "AskUnless",
+    "AutoApprove",
+    "ConsoleApprover",
 ]
 
 

@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from core.message import Message
-from plugins.tools import ToolRunner
 from protocols.loop import Loop
 from protocols.mediator import Context
+from services.tool_runner import ToolRunner
 
 
 class AgenticLoop(Loop):

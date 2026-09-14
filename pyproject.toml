@@ -39,6 +39,7 @@ known-first-party = [
     "harness",
     "protocols",
     "plugins",
+    "services",
 ]
 
 [tool.black]
