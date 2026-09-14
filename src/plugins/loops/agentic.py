@@ -1,27 +1,35 @@
 from __future__ import annotations
 
+from core.events import IterationStarted, ResponseReceived
 from core.message import Message
 from protocols.loop import Loop
 from protocols.mediator import Context
+from services.guard_chain import GuardChain
 from services.tool_runner import ToolRunner
 
 
 class AgenticLoop(Loop):
 
-    def __init__(self, max_iters: int = 25) -> None:
-        self.max_iters = max_iters
-
     def run(self, ctx: Context) -> str:
         provider = ctx.get("provider")
         tools = ToolRunner(ctx.all("tool"))
-        for _ in range(self.max_iters):
+        guards = GuardChain()
+
+        i = 0
+        while True:
             if ctx.interrupted:  # control
                 return "stopped: interrupted"
+
+            ctx.emit(IterationStarted(i))
+            decision = guards.check(ctx)
+            if decision.stop:
+                return f"stopped: {decision.reason}"
 
             history = ctx.history
             for cm in ctx.all("context"):  # middleware chain
                 history = cm.process(history, ctx)
             response = provider.complete(history, ctx)
+            ctx.emit(ResponseReceived(response))
             ctx.add_message(
                 Message(
                     role="assistant",
@@ -30,10 +38,9 @@ class AgenticLoop(Loop):
                 )
             )
 
-            if not response.tool_calls:  # natural exit
+            if not response.tool_calls:  # natural exit — model is done
                 return response.text
 
             for call in response.tool_calls:
                 ctx.add_message(tools.run(call, ctx))
-
-        return "stopped: reached max_iters guard"  # guard exit
+            i += 1

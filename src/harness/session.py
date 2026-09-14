@@ -11,3 +11,4 @@ class Session:
     id: str = field(default_factory=lambda: new_id("sess"))
     history: list[Message] = field(default_factory=list)
     interrupted: bool = False
+    extra: dict = field(default_factory=dict)

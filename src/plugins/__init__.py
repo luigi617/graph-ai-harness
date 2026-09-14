@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from harness import GraphAIHarness
 from plugins.context_manager import DefaultContextManager
+from plugins.guards import MaxIterations, Timeout
+from plugins.hooks import ElapsedTime, IterationCounter
 from plugins.loops import AgenticLoop, ChatLoop
 from plugins.permissions import (
     AllowList,
@@ -26,6 +28,10 @@ __all__ = [
     "AskUnless",
     "AutoApprove",
     "ConsoleApprover",
+    "MaxIterations",
+    "Timeout",
+    "IterationCounter",
+    "ElapsedTime",
 ]
 
 

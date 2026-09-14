@@ -1,13 +1,14 @@
 from __future__ import annotations
 
-from core.message import Message
+from core.events import Event, MessageAdded
 from graph import Graph
-from protocols.tracer import Tracer
+from protocols.hook import Hook
+from protocols.mediator import Context
 
 
-class GraphTracer(Tracer):
+class GraphTracer(Hook):
     """
-    Records each node into a caller-owned graph as the run unfolds.
+    A hook that records each message node into a caller-owned graph.
     """
 
     def __init__(self, graph: Graph) -> None:
@@ -15,21 +16,21 @@ class GraphTracer(Tracer):
         self._last: str | None = None
         self._owner: dict[str, str] = {}  # tool call id -> assistant node id
 
-    def on_node(self, node: Message) -> None:
+    def on(self, event: Event, ctx: Context) -> None:
+        if not isinstance(event, MessageAdded):
+            return
+        node = event.message
         self._graph.add_node(node.id, data=node)
 
-        # Sequence backbone: link to the previous node.
         if self._last is not None:
             self._graph.add_edge(self._last, node.id, role="next")
         self._last = node.id
 
-        # Remember which assistant turn owns each tool call.
         for call in node.tool_calls:
             cid = call.get("id")
             if cid:
                 self._owner[cid] = node.id
 
-        # Provenance: a tool result points back to the call that produced it.
         if node.tool_use_id and node.tool_use_id in self._owner:
             self._graph.add_edge(
                 self._owner[node.tool_use_id],

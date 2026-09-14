@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+from core.events import Event, MessageAdded
 from core.message import Message
 from harness.registry import Registry
 from harness.session import Session
+from protocols.mediator import Context
 
 
-class Context:
+class RunContext(Context):
     def __init__(self, session: Session, registry: Registry) -> None:
         self._session = session
         self._registry = registry
@@ -22,10 +24,17 @@ class Context:
     def interrupted(self) -> bool:
         return self._session.interrupted
 
+    @property
+    def extra(self) -> dict:
+        return self._session.extra
+
     def add_message(self, message: Message) -> None:
         self._session.history.append(message)
-        for observer in self._registry.all("tracer"):
-            observer.on_node(message)
+        self.emit(MessageAdded(message))
+
+    def emit(self, event: Event) -> None:
+        for hook in self._registry.all("hook"):
+            hook.on(event, self)
 
     def get(self, kind: str) -> object | None:
         return self._registry.get(kind)

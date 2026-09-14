@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from core.message import Message
-from harness.mediator import Context
+from harness.mediator import RunContext
 from harness.registry import Registry
 from harness.session import Session
 
@@ -18,7 +18,7 @@ class GraphAIHarness:
 
     def run(self, user_input: str) -> str:
         session = Session()
-        ctx = Context(session, self._registry)
+        ctx = RunContext(session, self._registry)
         ctx.add_message(Message(role="user", content=str(user_input)))
         loop = self._registry.get(ENTRY_KIND)
         if loop is None:
