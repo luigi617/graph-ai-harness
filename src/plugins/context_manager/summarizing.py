@@ -1,10 +1,18 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 from core.message import Message
 from protocols.context import ContextManager
 from protocols.mediator import Context
 
-_STATE_KEY = "context_summary"
+
+@dataclass
+class SummaryState:
+
+    upto: int = 0
+    text: str = ""
+
 
 _SUMMARY_PROMPT = (
     "You are compacting a long agent conversation to save context space. "
@@ -29,26 +37,26 @@ class SummarizingContextManager(ContextManager):
 
     def process(self, history: list[Message], ctx: Context) -> list[Message]:
         head_end = self._prefix_end(history)
-        state = ctx.extra.setdefault(_STATE_KEY, {"upto": head_end, "text": ""})
-        cutoff = max(state["upto"], head_end)
+        state = ctx.state(SummaryState)
+        cutoff = max(state.upto, head_end)
 
         # Fold newly-overflowing messages into the summary only when the live
         # tail has grown past the budget. Otherwise reuse the cached summary.
         if len(history) - cutoff > self._max_messages:
             new_cutoff = len(history) - self._keep_recent
-            folded = self._summarize(state["text"], history[cutoff:new_cutoff], ctx)
+            folded = self._summarize(state.text, history[cutoff:new_cutoff], ctx)
             if folded is None:
                 return history  # summarization unavailable — stay a no-op
-            state["text"] = folded
-            state["upto"] = new_cutoff
+            state.text = folded
+            state.upto = new_cutoff
             cutoff = new_cutoff
 
-        if not state["text"]:
+        if not state.text:
             return history
 
         summary = Message(
             role="user",
-            content=f"[Conversation summary so far]\n{state['text']}",
+            content=f"[Conversation summary so far]\n{state.text}",
         )
         return history[:head_end] + [summary] + history[cutoff:]
 
