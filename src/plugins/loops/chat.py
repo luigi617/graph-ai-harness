@@ -12,5 +12,5 @@ class ChatLoop(Loop):
         for cm in ctx.all("context"):  # request middleware chain
             history = cm.process(history, ctx)
         response = ctx.get("provider").complete(history, ctx)
-        ctx.history.append(Message(role="assistant", content=response.text))
+        ctx.add_message(Message(role="assistant", content=response.text))
         return response.text

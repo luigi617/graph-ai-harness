@@ -126,6 +126,28 @@ class Graph:
     def topological_order(self) -> list[str]:
         return [node_id for wave in self.levels() for node_id in wave]
 
+    def to_text(self, label=None, width: int = 44) -> str:
+        """
+        Render the graph as a vertical stack of rectangular boxes.
+        """
+        render = label or (lambda data: str(data))
+
+        def box(text: str) -> list[str]:
+            text = text.replace("\n", " ")
+            if len(text) > width:
+                text = text[: width - 3] + "..."
+            border = "─" * (width + 2)
+            return [f"┌{border}┐", f"│ {text.ljust(width)} │", f"└{border}┘"]
+
+        order = self.topological_order()
+        connector = " " * ((width + 4) // 2) + "│"
+        lines: list[str] = []
+        for i, node_id in enumerate(order):
+            lines += box(render(self._nodes[node_id].data))
+            if i < len(order) - 1:
+                lines.append(connector)
+        return "\n".join(lines)
+
     def _require(self, node_id: str) -> None:
         if node_id not in self._nodes:
             raise KeyError(f"unknown node id: {node_id!r}")

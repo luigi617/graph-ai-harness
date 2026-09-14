@@ -5,6 +5,7 @@ from plugins.context_manager import DefaultContextManager
 from plugins.loops import AgenticLoop, ChatLoop
 from plugins.providers import BaseProvider, BedrockProvider
 from plugins.tools import ToolRunner
+from plugins.tracers import GraphTracer
 
 __all__ = [
     "default_harness",
@@ -14,6 +15,7 @@ __all__ = [
     "ToolRunner",
     "BaseProvider",
     "BedrockProvider",
+    "GraphTracer",
 ]
 
 

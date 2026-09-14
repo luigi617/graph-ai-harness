@@ -5,6 +5,7 @@ from protocols.loop import Loop
 from protocols.mediator import Context
 from protocols.provider import Provider
 from protocols.tool import Tool
+from protocols.tracer import Tracer
 
 __all__ = [
     "Loop",
@@ -12,4 +13,5 @@ __all__ = [
     "ContextManager",
     "Tool",
     "Context",
+    "Tracer",
 ]

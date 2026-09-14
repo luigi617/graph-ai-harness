@@ -22,7 +22,7 @@ class AgenticLoop(Loop):
             for cm in ctx.all("context"):  # middleware chain
                 history = cm.process(history, ctx)
             response = provider.complete(history, ctx)
-            ctx.history.append(
+            ctx.add_message(
                 Message(
                     role="assistant",
                     content=response.text,
@@ -34,6 +34,6 @@ class AgenticLoop(Loop):
                 return response.text
 
             for call in response.tool_calls:
-                ctx.history.append(tools.run(call, ctx))
+                ctx.add_message(tools.run(call, ctx))
 
         return "stopped: reached max_iters guard"  # guard exit

@@ -18,8 +18,8 @@ class GraphAIHarness:
 
     def run(self, user_input: str) -> str:
         session = Session()
-        session.history.append(Message(role="user", content=str(user_input)))
         ctx = Context(session, self._registry)
+        ctx.add_message(Message(role="user", content=str(user_input)))
         loop = self._registry.get(ENTRY_KIND)
         if loop is None:
             raise LookupError(f"no {ENTRY_KIND!r} plugin registered")

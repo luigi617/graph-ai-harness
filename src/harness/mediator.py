@@ -22,6 +22,11 @@ class Context:
     def interrupted(self) -> bool:
         return self._session.interrupted
 
+    def add_message(self, message: Message) -> None:
+        self._session.history.append(message)
+        for observer in self._registry.all("tracer"):
+            observer.on_node(message)
+
     def get(self, kind: str) -> object | None:
         return self._registry.get(kind)
 
