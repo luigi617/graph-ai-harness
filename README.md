@@ -1,3 +1,3 @@
-# graph-ai-harness
+# nexus-ai-harness
 
 Work in progress...
