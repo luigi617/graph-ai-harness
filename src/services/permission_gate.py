@@ -1,14 +1,13 @@
 from __future__ import annotations
 
+from core.events import ApprovalRequested
 from core.permission import PermissionDecision, PermissionVerdict
 from protocols.mediator import Context
 
 
 class PermissionGate:
-    """Combines all permission plugins and resolves an 'ask' via the approver.
-
-    Returns a settled decision (ALLOW or DENY only) — the caller never has to
-    deal with ASK.
+    """
+    Combines all permission plugins and resolves an 'ask' via the approver.
     """
 
     def decide(self, call: dict, ctx: Context) -> PermissionDecision:
@@ -16,6 +15,7 @@ class PermissionGate:
         if decision.verdict != PermissionVerdict.ASK:
             return decision
 
+        ctx.emit(ApprovalRequested(call, decision.reason))
         approver = ctx.get("approver")
         if approver is not None and approver.approve(call, decision.reason, ctx):
             return PermissionDecision.allow()

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from core.events import SessionEnded, SessionStarted
 from core.message import Message
 from harness.mediator import RunContext
 from harness.registry import Registry
@@ -19,8 +20,12 @@ class GraphAIHarness:
     def run(self, user_input: str) -> str:
         session = Session()
         ctx = RunContext(session, self._registry)
-        ctx.add_message(Message(role="user", content=str(user_input)))
         loop = self._registry.get(ENTRY_KIND)
         if loop is None:
             raise LookupError(f"no {ENTRY_KIND!r} plugin registered")
-        return loop.run(ctx)
+
+        ctx.emit(SessionStarted(session.id))
+        ctx.add_message(Message(role="user", content=str(user_input)))
+        result = loop.run(ctx)
+        ctx.emit(SessionEnded(session.id, result))
+        return result

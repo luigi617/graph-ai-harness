@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 
+from core.events import ToolCallCompleted, ToolCallDenied, ToolCallStarted
 from core.message import Message
 from core.permission import PermissionVerdict
 from protocols.mediator import Context
@@ -19,17 +20,26 @@ class ToolRunner:
 
     def run(self, call: dict, ctx: Context) -> Message:
         name = call.get("name", "")
+
         decision = self._permission_gate.decide(call, ctx)
-
         if decision.verdict == PermissionVerdict.DENY:
-            content = f"denied: {decision.reason or 'not permitted'}"
-        else:
-            tool = self._by_name.get(name)
-            if tool is None:
-                content = f"error: unknown tool {name!r}"
-            else:
-                content = tool.run(call.get("arguments", {}), ctx)
+            reason = decision.reason or "not permitted"
+            ctx.emit(ToolCallDenied(call, reason))
+            return self._message(call, name, f"denied: {reason}")
 
+        tool = self._by_name.get(name)
+        if tool is None:
+            reason = f"unknown tool {name!r}"
+            ctx.emit(ToolCallDenied(call, reason))
+            return self._message(call, name, f"error: {reason}")
+
+        ctx.emit(ToolCallStarted(call))
+        result = self._message(call, name, tool.run(call.get("arguments", {}), ctx))
+        ctx.emit(ToolCallCompleted(call, result))
+        return result
+
+    @staticmethod
+    def _message(call: dict, name: str, content: str) -> Message:
         return Message(
             role="tool",
             content=content,

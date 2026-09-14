@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from core.events import IterationStarted, ResponseReceived
+from core.events import IterationStarted, LoopStopped, ResponseReceived
 from core.message import Message
 from protocols.loop import Loop
 from protocols.mediator import Context
@@ -18,11 +18,13 @@ class AgenticLoop(Loop):
         i = 0
         while True:
             if ctx.interrupted:  # control
+                ctx.emit(LoopStopped("interrupted"))
                 return "stopped: interrupted"
 
             ctx.emit(IterationStarted(i))
             decision = guards.check(ctx)
             if decision.stop:
+                ctx.emit(LoopStopped(f"guard: {decision.reason}"))
                 return f"stopped: {decision.reason}"
 
             history = ctx.history
@@ -39,6 +41,7 @@ class AgenticLoop(Loop):
             )
 
             if not response.tool_calls:  # natural exit — model is done
+                ctx.emit(LoopStopped("completed"))
                 return response.text
 
             for call in response.tool_calls:
