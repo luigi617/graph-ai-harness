@@ -12,7 +12,9 @@ from plugins.permissions import (
     ConsoleApprover,
     DenyList,
 )
+from plugins.memory import FileMemoryStore
 from plugins.providers import BaseProvider, BedrockProvider
+from plugins.tools import Forget, Recall, Remember
 from plugins.tracers import GraphTracer
 
 __all__ = [
@@ -34,6 +36,10 @@ __all__ = [
     "IterationCounter",
     "ElapsedTime",
     "CostCounter",
+    "FileMemoryStore",
+    "Remember",
+    "Recall",
+    "Forget",
 ]
 
 

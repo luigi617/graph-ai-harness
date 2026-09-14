@@ -1,0 +1,40 @@
+from __future__ import annotations
+
+from abc import abstractmethod
+from typing import ClassVar, Protocol, runtime_checkable
+
+
+@runtime_checkable
+class MemoryItem(Protocol):
+    """The shape consumers (the memory tools) rely on. Concrete stores return
+    their own item type — which may carry extra, store-specific fields — as
+    long as it satisfies this interface."""
+
+    text: str
+    id: str
+
+
+@runtime_checkable
+class MemoryStore(Protocol):
+    """Durable, cross-session fact storage. Registered as a plugin and resolved
+    by the memory tools via ``ctx.get("memory")``. Bring any backend (files,
+    SQLite, embeddings, ...) that satisfies this interface."""
+
+    kind: ClassVar[str] = "memory"
+
+    @abstractmethod
+    def save(self, text: str, id: str | None = None) -> MemoryItem:
+        """Upsert a memory. No ``id`` creates a new one; an existing ``id``
+        overwrites that memory (create and update are one operation)."""
+
+    @abstractmethod
+    def get(self, id: str) -> MemoryItem | None: ...
+
+    @abstractmethod
+    def search(self, query: str, limit: int = 5) -> list[MemoryItem]: ...
+
+    @abstractmethod
+    def all(self) -> list[MemoryItem]: ...
+
+    @abstractmethod
+    def delete(self, id: str) -> bool: ...
