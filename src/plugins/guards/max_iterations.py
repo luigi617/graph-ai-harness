@@ -1,0 +1,21 @@
+from __future__ import annotations
+
+from core.guard import GuardDecision
+from plugins.hooks import IterationState
+from protocols.guard import Guard
+from protocols.mediator import Context
+
+
+class MaxIterations(Guard):
+    """
+    Stop once the iteration count reaches the limit.
+    Pair with an IterationCounter hook, which populates IterationState.
+    """
+
+    def __init__(self, limit: int) -> None:
+        self._limit = limit
+
+    def check(self, ctx: Context) -> GuardDecision:
+        if ctx.state(IterationState).index >= self._limit:
+            return GuardDecision.halt(f"reached {self._limit} iterations")
+        return GuardDecision.proceed()
