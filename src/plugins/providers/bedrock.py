@@ -13,6 +13,13 @@ from protocols.tool import Tool
 
 DEFAULT_REGION = "us-east-1"
 
+# USD per 1M tokens: (input, output). Models not listed here cost 0
+PRICING: dict[str, tuple[float, float]] = {
+    "us.anthropic.claude-opus-4-8": (15.0, 75.0),
+    "us.anthropic.claude-3-5-sonnet-20241022-v2:0": (3.0, 15.0),
+    "us.anthropic.claude-3-5-haiku-20241022-v1:0": (0.8, 4.0),
+}
+
 
 class BedrockProvider(BaseProvider):
     def __init__(
@@ -49,7 +56,16 @@ class BedrockProvider(BaseProvider):
         if tools:
             kwargs["toolConfig"] = {"tools": [self._tool_spec(t) for t in tools]}
         response = self._get_client().converse(**kwargs)
-        return self._parse(response)
+        parsed = self._parse(response)
+        parsed.cost = self._cost(parsed.usage)
+        return parsed
+
+    def _cost(self, usage: dict) -> float:
+        input_price, output_price = PRICING.get(self.model, (0.0, 0.0))
+        return (
+            usage.get("input_tokens", 0) * input_price
+            + usage.get("output_tokens", 0) * output_price
+        ) / 1_000_000
 
     @staticmethod
     def _to_converse(history: list[Message]) -> tuple[list[dict], list[dict]]:
@@ -129,4 +145,12 @@ class BedrockProvider(BaseProvider):
                         "arguments": use.get("input", {}),
                     }
                 )
-        return Response(text="".join(text_parts), tool_calls=tool_calls)
+        usage = response.get("usage", {})
+        return Response(
+            text="".join(text_parts),
+            tool_calls=tool_calls,
+            usage={
+                "input_tokens": usage.get("inputTokens", 0),
+                "output_tokens": usage.get("outputTokens", 0),
+            },
+        )

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import time
 
-from core.events import Event, IterationStarted
+from core.events import Event, IterationStarted, ResponseReceived
 from protocols.hook import Hook
 from protocols.mediator import Context
 
@@ -22,3 +22,11 @@ class ElapsedTime(Hook):
         now = time.monotonic()
         ctx.extra.setdefault("started_at", now)
         ctx.extra["elapsed"] = now - ctx.extra["started_at"]
+
+
+class CostCounter(Hook):
+    """Accumulate the running cost (USD) from each response into the run extra."""
+
+    def on(self, event: Event, ctx: Context) -> None:
+        if isinstance(event, ResponseReceived):
+            ctx.extra["cost"] = ctx.extra.get("cost", 0.0) + event.response.cost

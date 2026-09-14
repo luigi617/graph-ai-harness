@@ -11,3 +11,6 @@ class Response:
 
     text: str = ""
     tool_calls: list[dict] = field(default_factory=list)
+    # token usage
+    usage: dict = field(default_factory=dict)
+    cost: float = 0.0
