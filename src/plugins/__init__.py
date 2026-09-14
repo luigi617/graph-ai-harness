@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from harness import GraphAIHarness
-from plugins.context_manager import DefaultContextManager
+from plugins.context_manager import SummarizingContextManager
 from plugins.guards import BudgetGuard, MaxIterations, Timeout
 from plugins.hooks import CostCounter, ElapsedTime, IterationCounter
 from plugins.loops import AgenticLoop, ChatLoop
@@ -19,7 +19,7 @@ __all__ = [
     "default_harness",
     "ChatLoop",
     "AgenticLoop",
-    "DefaultContextManager",
+    "SummarizingContextManager",
     "BaseProvider",
     "BedrockProvider",
     "GraphTracer",
@@ -38,4 +38,4 @@ __all__ = [
 
 
 def default_harness() -> GraphAIHarness:
-    return GraphAIHarness().use(AgenticLoop()).use(DefaultContextManager())
+    return GraphAIHarness().use(AgenticLoop()).use(SummarizingContextManager())
