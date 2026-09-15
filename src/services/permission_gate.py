@@ -3,6 +3,7 @@ from __future__ import annotations
 from core.events import ApprovalRequested
 from core.permission import PermissionDecision, PermissionVerdict
 from protocols.mediator import Context
+from core.invoke import invoke
 
 
 class PermissionGate:
@@ -10,14 +11,16 @@ class PermissionGate:
     Combines all permission plugins and resolves an 'ask' via the approver.
     """
 
-    def decide(self, call: dict, ctx: Context) -> PermissionDecision:
+    async def decide(self, call: dict, ctx: Context) -> PermissionDecision:
         decision = self._combine(call, ctx)
         if decision.verdict != PermissionVerdict.ASK:
             return decision
 
         ctx.emit(ApprovalRequested(call, decision.reason))
         approver = ctx.get("approver")
-        if approver is not None and approver.approve(call, decision.reason, ctx):
+        if approver is not None and await invoke(
+            approver.approve, call, decision.reason, ctx
+        ):
             return PermissionDecision.allow()
         return PermissionDecision.deny(decision.reason or "not approved")
 

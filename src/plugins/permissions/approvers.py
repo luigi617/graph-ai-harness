@@ -12,7 +12,9 @@ class AutoApprove(Approver):
 
 
 class ConsoleApprover(Approver):
-    """Prompt on the terminal: y (once) / n (deny) / a (always allow this tool)."""
+    """
+    Prompt on the terminal: y (once) / n (deny) / a (always allow this tool).
+    """
 
     def __init__(self) -> None:
         self._always: set[str] = set()

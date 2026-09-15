@@ -8,7 +8,8 @@ from dotenv import load_dotenv
 
 from core.message import Message
 from core.response import Response
-from plugins.providers.base import BaseProvider
+from protocols.mediator import Context
+from protocols.provider import Provider
 from protocols.tool import Tool
 
 DEFAULT_REGION = "us-east-1"
@@ -21,7 +22,7 @@ PRICING: dict[str, tuple[float, float]] = {
 }
 
 
-class BedrockProvider(BaseProvider):
+class BedrockProvider(Provider):
     def __init__(
         self,
         model: str,
@@ -30,12 +31,16 @@ class BedrockProvider(BaseProvider):
         max_tokens: int = 1024,
         **params,
     ) -> None:
-        super().__init__(model, **params)
+        self.model = model
+        self.params = params
         load_dotenv()
         self.region = region or os.getenv("AWS_REGION") or DEFAULT_REGION
         self.api_key = api_key or os.getenv("AWS_BEARER_TOKEN_BEDROCK")
         self.max_tokens = max_tokens
         self._client: Any = None
+
+    def complete(self, history: list[Message], ctx: Context) -> Response:
+        return self._generate(history, ctx.all("tool"))
 
     def _get_client(self) -> Any:
         if self._client is None:

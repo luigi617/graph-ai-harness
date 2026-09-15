@@ -1,16 +1,17 @@
-from __future__ import annotations
+import asyncio
 
 from core.events import IterationStarted, LoopStopped, ResponseReceived
 from core.message import Message
 from protocols.loop import Loop
 from protocols.mediator import Context
 from services.guard_chain import GuardChain
+from core.invoke import invoke
 from services.tool_runner import ToolRunner
 
 
 class AgenticLoop(Loop):
 
-    def run(self, ctx: Context) -> str:
+    async def run(self, ctx: Context) -> str:
         provider = ctx.get("provider")
         tools = ToolRunner(ctx.all("tool"))
         guards = GuardChain()
@@ -29,8 +30,8 @@ class AgenticLoop(Loop):
 
             history = ctx.history
             for cm in ctx.all("context"):  # middleware chain
-                history = cm.process(history, ctx)
-            response = provider.complete(history, ctx)
+                history = await invoke(cm.process, history, ctx)
+            response = await invoke(provider.complete, history, ctx)
             ctx.emit(ResponseReceived(response))
             ctx.add_message(
                 Message(
@@ -44,6 +45,9 @@ class AgenticLoop(Loop):
                 ctx.emit(LoopStopped("completed"))
                 return response.text
 
-            for call in response.tool_calls:
-                ctx.add_message(tools.run(call, ctx))
+            results = await asyncio.gather(
+                *(tools.run(call, ctx) for call in response.tool_calls)
+            )
+            for message in results:
+                ctx.add_message(message)
             i += 1

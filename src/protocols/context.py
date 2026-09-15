@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from abc import abstractmethod
+from collections.abc import Awaitable
 from typing import ClassVar, Protocol, runtime_checkable
 
 from core.message import Message
@@ -16,4 +17,10 @@ class ContextManager(Protocol):
     kind: ClassVar[str] = "context"
 
     @abstractmethod
-    def process(self, history: list[Message], ctx: Context) -> list[Message]: ...
+    def process(
+        self, history: list[Message], ctx: Context
+    ) -> list[Message] | Awaitable[list[Message]]:
+        """
+        Transform the history before the provider call.
+        May be sync or ``async def`` — the harness adapts.
+        """

@@ -7,6 +7,7 @@ from core.message import Message
 from core.permission import PermissionVerdict
 from protocols.mediator import Context
 from protocols.tool import Tool
+from core.invoke import invoke
 from services.permission_gate import PermissionGate
 
 
@@ -18,10 +19,10 @@ class ToolRunner:
     def add(self, tool: Tool) -> None:
         self._by_name[tool.name] = tool
 
-    def run(self, call: dict, ctx: Context) -> Message:
+    async def run(self, call: dict, ctx: Context) -> Message:
         name = call.get("name", "")
 
-        decision = self._permission_gate.decide(call, ctx)
+        decision = await self._permission_gate.decide(call, ctx)
         if decision.verdict == PermissionVerdict.DENY:
             reason = decision.reason or "not permitted"
             ctx.emit(ToolCallDenied(call, reason))
@@ -34,7 +35,8 @@ class ToolRunner:
             return self._message(call, name, f"error: {reason}")
 
         ctx.emit(ToolCallStarted(call))
-        result = self._message(call, name, tool.run(call.get("arguments", {}), ctx))
+        content = await invoke(tool.run, call.get("arguments", {}), ctx)
+        result = self._message(call, name, content)
         ctx.emit(ToolCallCompleted(call, result))
         return result
 

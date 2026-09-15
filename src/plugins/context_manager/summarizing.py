@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from core.message import Message
 from protocols.context import ContextManager
 from protocols.mediator import Context
+from core.invoke import invoke
 
 
 @dataclass
@@ -35,7 +36,7 @@ class SummarizingContextManager(ContextManager):
         self._max_messages = max_messages
         self._keep_recent = keep_recent
 
-    def process(self, history: list[Message], ctx: Context) -> list[Message]:
+    async def process(self, history: list[Message], ctx: Context) -> list[Message]:
         head_end = self._prefix_end(history)
         state = ctx.state(SummaryState)
         cutoff = max(state.upto, head_end)
@@ -44,7 +45,7 @@ class SummarizingContextManager(ContextManager):
         # tail has grown past the budget. Otherwise reuse the cached summary.
         if len(history) - cutoff > self._max_messages:
             new_cutoff = len(history) - self._keep_recent
-            folded = self._summarize(state.text, history[cutoff:new_cutoff], ctx)
+            folded = await self._summarize(state.text, history[cutoff:new_cutoff], ctx)
             if folded is None:
                 return history  # summarization unavailable — stay a no-op
             state.text = folded
@@ -71,7 +72,7 @@ class SummarizingContextManager(ContextManager):
             i += 1
         return i
 
-    def _summarize(
+    async def _summarize(
         self, prior: str, messages: list[Message], ctx: Context
     ) -> str | None:
         provider = ctx.get("provider")
@@ -85,7 +86,7 @@ class SummarizingContextManager(ContextManager):
             Message(role="user", content=body),
         ]
         try:
-            response = provider.complete(request, ctx)
+            response = await invoke(provider.complete, request, ctx)
         except Exception:
             return None
         text = (response.text or "").strip()

@@ -13,7 +13,7 @@ from plugins.permissions import (
     DenyList,
 )
 from plugins.memory import FileMemoryStore
-from plugins.providers import BaseProvider, BedrockProvider
+from plugins.providers import BedrockProvider
 from plugins.tools import Forget, Recall, Remember
 from plugins.tracers import GraphTracer
 
@@ -22,7 +22,6 @@ __all__ = [
     "ChatLoop",
     "AgenticLoop",
     "SummarizingContextManager",
-    "BaseProvider",
     "BedrockProvider",
     "GraphTracer",
     "AllowList",
