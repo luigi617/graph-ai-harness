@@ -3,11 +3,11 @@ from __future__ import annotations
 from collections.abc import Iterable
 
 from core.events import ToolCallCompleted, ToolCallDenied, ToolCallStarted
+from core.invoke import invoke
 from core.message import Message
 from core.permission import PermissionVerdict
 from protocols.mediator import Context
 from protocols.tool import Tool
-from core.invoke import invoke
 from services.permission_gate import PermissionGate
 
 

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import ClassVar
+
 from protocols.mediator import Context
 from protocols.memory import MemoryStore
 from protocols.tool import Tool
@@ -18,7 +20,7 @@ class Recall(Tool):
         "Each result shows its id, which can be passed to remember (to update) "
         "or forget (to delete)."
     )
-    parameters = {
+    parameters: ClassVar[dict] = {
         "type": "object",
         "properties": {
             "query": {
@@ -34,7 +36,7 @@ class Recall(Tool):
     }
 
     def run(self, arguments: dict, ctx: Context) -> str:
-        store: MemoryStore | None = ctx.get("memory")
+        store: MemoryStore | None = ctx.get(MemoryStore)
         if store is None:
             return "error: no memory store configured"
         query = str(arguments.get("query", "")).strip()

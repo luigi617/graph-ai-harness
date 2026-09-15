@@ -2,10 +2,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from core.invoke import invoke
 from core.message import Message
 from protocols.context import ContextManager
 from protocols.mediator import Context
-from core.invoke import invoke
+from protocols.provider import Provider
 
 
 @dataclass
@@ -59,7 +60,7 @@ class SummarizingContextManager(ContextManager):
             role="user",
             content=f"[Conversation summary so far]\n{state.text}",
         )
-        return history[:head_end] + [summary] + history[cutoff:]
+        return [*history[:head_end], summary, *history[cutoff:]]
 
     @staticmethod
     def _prefix_end(history: list[Message]) -> int:
@@ -75,12 +76,16 @@ class SummarizingContextManager(ContextManager):
     async def _summarize(
         self, prior: str, messages: list[Message], ctx: Context
     ) -> str | None:
-        provider = ctx.get("provider")
+        provider = ctx.get(Provider)
         if provider is None or not messages:
             return None
 
         transcript = "\n".join(f"{m.role}: {m.content}" for m in messages if m.content)
-        body = transcript if not prior else f"Existing recap:\n{prior}\n\nNew messages:\n{transcript}"
+        body = (
+            transcript
+            if not prior
+            else f"Existing recap:\n{prior}\n\nNew messages:\n{transcript}"
+        )
         request = [
             Message(role="system", content=_SUMMARY_PROMPT),
             Message(role="user", content=body),

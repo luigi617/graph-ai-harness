@@ -5,15 +5,22 @@ from typing import Protocol, TypeVar, runtime_checkable
 
 from core.events import Event
 from core.message import Message
+from protocols.plugin import Plugin
 
 T = TypeVar("T")
+P = TypeVar("P", bound=Plugin)
 
 
 @runtime_checkable
 class Context(Protocol):
-    session_id: str
-    history: list[Message]
-    interrupted: bool
+    @property
+    def session_id(self) -> str: ...
+
+    @property
+    def history(self) -> list[Message]: ...
+
+    @property
+    def interrupted(self) -> bool: ...
 
     @abstractmethod
     def state(self, cls: type[T]) -> T: ...
@@ -25,7 +32,11 @@ class Context(Protocol):
     def emit(self, event: Event) -> None: ...
 
     @abstractmethod
-    def get(self, kind: str) -> object | None: ...
+    def get(self, cls: type[P]) -> P | None: ...
 
     @abstractmethod
-    def all(self, kind: str) -> list[object]: ...
+    def all(self, cls: type[P]) -> list[P]: ...
+
+    @abstractmethod
+    def fork(self, plugins: list[object] | None = None) -> Context:
+        """Create a forked context"""

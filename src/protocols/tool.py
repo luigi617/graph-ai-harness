@@ -11,9 +11,9 @@ from protocols.mediator import Context
 class Tool(Protocol):
     kind: ClassVar[str] = "tool"
 
-    name: str
-    description: str
-    parameters: dict
+    name: ClassVar[str]
+    description: ClassVar[str]
+    parameters: ClassVar[dict]
 
     @abstractmethod
     def run(self, arguments: dict, ctx: Context) -> str | Awaitable[str]:

@@ -1,9 +1,15 @@
 from __future__ import annotations
 
+from typing import Any, TypeVar
+
+from protocols.plugin import Plugin
+
+P = TypeVar("P", bound=Plugin)
+
 
 class Registry:
     def __init__(self) -> None:
-        self._plugins: list[object] = []
+        self._plugins: list[Any] = []
 
     def add(self, plugin: object) -> None:
         if not hasattr(plugin, "kind"):
@@ -12,14 +18,17 @@ class Registry:
             )
         self._plugins.append(plugin)
 
-    def get(self, kind: str) -> object | None:
+    def get(self, cls: type[P]) -> P | None:
         for plugin in reversed(self._plugins):
-            if getattr(plugin, "kind", None) == kind:
+            if getattr(plugin, "kind", None) == cls.kind:
                 return plugin
         return None
 
-    def all(self, kind: str) -> list[object]:
-        return [p for p in self._plugins if getattr(p, "kind", None) == kind]
+    def all(self, cls: type[P]) -> list[P]:
+        return [p for p in self._plugins if getattr(p, "kind", None) == cls.kind]
+
+    def plugins(self) -> list[Any]:
+        return list(self._plugins)
 
     def kinds(self) -> set[str]:
-        return {getattr(p, "kind") for p in self._plugins}
+        return {p.kind for p in self._plugins}

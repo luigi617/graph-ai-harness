@@ -1,19 +1,24 @@
 import asyncio
 
 from core.events import IterationStarted, LoopStopped, ResponseReceived
+from core.invoke import invoke
 from core.message import Message
+from protocols.context import ContextManager
 from protocols.loop import Loop
 from protocols.mediator import Context
+from protocols.provider import Provider
+from protocols.tool import Tool
 from services.guard_chain import GuardChain
-from core.invoke import invoke
 from services.tool_runner import ToolRunner
 
 
 class AgenticLoop(Loop):
 
     async def run(self, ctx: Context) -> str:
-        provider = ctx.get("provider")
-        tools = ToolRunner(ctx.all("tool"))
+        provider = ctx.get(Provider)
+        if provider is None:
+            raise LookupError("no provider plugin registered")
+        tools = ToolRunner(ctx.all(Tool))
         guards = GuardChain()
 
         i = 0
@@ -29,7 +34,7 @@ class AgenticLoop(Loop):
                 return f"stopped: {decision.reason}"
 
             history = ctx.history
-            for cm in ctx.all("context"):  # middleware chain
+            for cm in ctx.all(ContextManager):  # middleware chain
                 history = await invoke(cm.process, history, ctx)
             response = await invoke(provider.complete, history, ctx)
             ctx.emit(ResponseReceived(response))

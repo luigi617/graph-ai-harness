@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from abc import abstractmethod
+from collections.abc import Sequence
 from typing import ClassVar, Protocol, runtime_checkable
 
 
@@ -31,10 +32,10 @@ class MemoryStore(Protocol):
     def get(self, id: str) -> MemoryItem | None: ...
 
     @abstractmethod
-    def search(self, query: str, limit: int = 5) -> list[MemoryItem]: ...
+    def search(self, query: str, limit: int = 5) -> Sequence[MemoryItem]: ...
 
     @abstractmethod
-    def all(self) -> list[MemoryItem]: ...
+    def all(self) -> Sequence[MemoryItem]: ...
 
     @abstractmethod
     def delete(self, id: str) -> bool: ...

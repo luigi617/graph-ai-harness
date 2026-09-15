@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import ClassVar
+
 from protocols.mediator import Context
 from protocols.memory import MemoryStore
 from protocols.tool import Tool
@@ -18,20 +20,23 @@ class Remember(Tool):
         "(from recall) to overwrite it. Use for stable, reusable facts "
         "(preferences, decisions, project context) — not transient chatter."
     )
-    parameters = {
+    parameters: ClassVar[dict] = {
         "type": "object",
         "properties": {
             "text": {"type": "string", "description": "The fact to remember."},
             "id": {
                 "type": "string",
-                "description": "Id of an existing memory to overwrite. Omit to create a new one.",
+                "description": (
+                    "Id of an existing memory to overwrite. "
+                    "Omit to create a new one."
+                ),
             },
         },
         "required": ["text"],
     }
 
     def run(self, arguments: dict, ctx: Context) -> str:
-        store: MemoryStore | None = ctx.get("memory")
+        store: MemoryStore | None = ctx.get(MemoryStore)
         if store is None:
             return "error: no memory store configured"
         text = str(arguments.get("text", "")).strip()

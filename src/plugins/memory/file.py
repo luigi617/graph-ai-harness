@@ -67,8 +67,8 @@ class FileMemoryStore(MemoryStore):
         return [item for _, _, item in scored[:limit]]
 
     def all(self) -> list[FileMemoryItem]:
-        items = [self._parse(p) for p in self._dir.glob("*.md")]
-        items = [i for i in items if i is not None]
+        parsed = (self._parse(p) for p in self._dir.glob("*.md"))
+        items = [item for item in parsed if item is not None]
         items.sort(key=lambda i: i.created_at, reverse=True)
         return items
 

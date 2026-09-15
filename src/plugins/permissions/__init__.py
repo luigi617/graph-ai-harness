@@ -5,8 +5,8 @@ from plugins.permissions.policies import AllowList, AskUnless, DenyList
 
 __all__ = [
     "AllowList",
-    "DenyList",
     "AskUnless",
     "AutoApprove",
     "ConsoleApprover",
+    "DenyList",
 ]

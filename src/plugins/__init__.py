@@ -5,6 +5,7 @@ from plugins.context_manager import SummarizingContextManager
 from plugins.guards import BudgetGuard, MaxIterations, Timeout
 from plugins.hooks import CostCounter, ElapsedTime, IterationCounter
 from plugins.loops import AgenticLoop, ChatLoop
+from plugins.memory import FileMemoryStore
 from plugins.permissions import (
     AllowList,
     AskUnless,
@@ -12,33 +13,35 @@ from plugins.permissions import (
     ConsoleApprover,
     DenyList,
 )
-from plugins.memory import FileMemoryStore
 from plugins.providers import BedrockProvider
-from plugins.tools import Forget, Recall, Remember
+from plugins.spawner import InProcessSpawner
+from plugins.tools import Forget, Recall, Remember, Subagent
 from plugins.tracers import GraphTracer
 
 __all__ = [
-    "default_harness",
-    "ChatLoop",
     "AgenticLoop",
-    "SummarizingContextManager",
-    "BedrockProvider",
-    "GraphTracer",
     "AllowList",
-    "DenyList",
     "AskUnless",
     "AutoApprove",
-    "ConsoleApprover",
-    "MaxIterations",
-    "Timeout",
+    "BedrockProvider",
     "BudgetGuard",
-    "IterationCounter",
-    "ElapsedTime",
+    "ChatLoop",
+    "ConsoleApprover",
     "CostCounter",
+    "DenyList",
+    "ElapsedTime",
     "FileMemoryStore",
-    "Remember",
-    "Recall",
     "Forget",
+    "GraphTracer",
+    "InProcessSpawner",
+    "IterationCounter",
+    "MaxIterations",
+    "Recall",
+    "Remember",
+    "Subagent",
+    "SummarizingContextManager",
+    "Timeout",
+    "default_harness",
 ]
 
 

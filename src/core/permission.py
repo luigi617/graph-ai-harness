@@ -16,13 +16,22 @@ class PermissionDecision:
     reason: str = ""
 
     @classmethod
-    def allow(cls) -> "PermissionDecision":
+    def allow(cls) -> PermissionDecision:
         return cls(PermissionVerdict.ALLOW)
 
     @classmethod
-    def deny(cls, reason: str = "") -> "PermissionDecision":
+    def deny(cls, reason: str = "") -> PermissionDecision:
         return cls(PermissionVerdict.DENY, reason)
 
     @classmethod
-    def ask(cls, reason: str = "") -> "PermissionDecision":
+    def ask(cls, reason: str = "") -> PermissionDecision:
         return cls(PermissionVerdict.ASK, reason)
+
+
+@dataclass
+class ApprovalRequest:
+    """An asked-for tool call presented to the approver."""
+
+    call: dict
+    reason: str | None
+    origin: str = ""

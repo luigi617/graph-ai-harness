@@ -14,7 +14,7 @@ authors = [{ name = "luigi617" }]
 dependencies = ["boto3", "python-dotenv"]
 
 [project.optional-dependencies]
-dev = ["pytest", "ruff"]
+dev = ["pytest", "ruff", "mypy"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -28,9 +28,7 @@ target-version = "py311"
 src = ["src"]
 
 [tool.ruff.lint]
-# pyflakes (F) + pycodestyle (E/W) cover what flake8 did; add isort (I),
-# pyupgrade (UP), and bugbear (B) for a bit more.
-select = ["E", "W", "F", "I", "UP", "B"]
+select = ["E", "W", "F", "I", "UP", "B", "C4", "SIM", "A", "ISC", "RET", "RUF"]
 
 [tool.ruff.lint.isort]
 known-first-party = [
@@ -41,6 +39,26 @@ known-first-party = [
     "plugins",
     "services",
 ]
+
+[tool.ruff.lint.flake8-builtins]
+builtins-ignorelist = ["id"]
+
+[tool.mypy]
+python_version = "3.11"
+mypy_path = "src"
+files = ["src"]
+namespace_packages = true
+explicit_package_bases = true
+check_untyped_defs = true
+no_implicit_optional = true
+disable_error_code = ["type-abstract"]
+warn_redundant_casts = true
+warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+# Third-party packages without type stubs.
+module = ["boto3.*", "botocore.*", "dotenv.*"]
+ignore_missing_imports = true
 
 [tool.black]
 target-version = ["py311"]

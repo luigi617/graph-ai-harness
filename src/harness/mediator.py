@@ -4,11 +4,16 @@ from typing import TypeVar
 
 from core.events import Event, MessageAdded
 from core.message import Message
+from core.spawn import SpawnState
 from harness.registry import Registry
 from harness.session import Session
+from protocols.approver import Approver
+from protocols.hook import Hook
 from protocols.mediator import Context
+from protocols.plugin import Plugin
 
 T = TypeVar("T")
+P = TypeVar("P", bound=Plugin)
 
 
 class RunContext(Context):
@@ -36,11 +41,29 @@ class RunContext(Context):
         self.emit(MessageAdded(message))
 
     def emit(self, event: Event) -> None:
-        for hook in self._registry.all("hook"):
+        for hook in self._registry.all(Hook):
             hook.on(event, self)
 
-    def get(self, kind: str) -> object | None:
-        return self._registry.get(kind)
+    def get(self, cls: type[P]) -> P | None:
+        return self._registry.get(cls)
 
-    def all(self, kind: str) -> list[object]:
-        return self._registry.all(kind)
+    def all(self, cls: type[P]) -> list[P]:
+        return self._registry.all(cls)
+
+    def fork(self, plugins: list[object] | None = None) -> RunContext:
+        # None → inherit all parent plugins; a list → the child sees only these.
+        if plugins is None:
+            plugins = self._registry.plugins()
+        child_registry = Registry()
+        for plugin in plugins:
+            child_registry.add(plugin)
+        # The subagent is headless: its approvals escalate to the parent's
+        # approver. Inherit it unless the child was given one explicitly.
+        if child_registry.get(Approver) is None:
+            approver = self._registry.get(Approver)
+            if approver is not None:
+                child_registry.add(approver)
+
+        child = RunContext(Session(), child_registry)
+        child.state(SpawnState).depth = self.state(SpawnState).depth + 1
+        return child

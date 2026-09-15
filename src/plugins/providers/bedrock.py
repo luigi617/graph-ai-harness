@@ -40,7 +40,7 @@ class BedrockProvider(Provider):
         self._client: Any = None
 
     def complete(self, history: list[Message], ctx: Context) -> Response:
-        return self._generate(history, ctx.all("tool"))
+        return self._generate(history, ctx.all(Tool))
 
     def _get_client(self) -> Any:
         if self._client is None:
